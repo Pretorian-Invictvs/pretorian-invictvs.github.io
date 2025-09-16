@@ -1,3 +1,463 @@
-<!doctype html><html><head>
-  <meta charset="utf-8"><title>OK</title>
-</head><body><h1>OK</h1></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Response Tracking — Capture & Reports</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    input[type="date"], input[type="tel"], input[type="email"], input[type="text"] { appearance: none; }
+    select[multiple] { min-height: 8rem; }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <main class="max-w-5xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-3xl font-bold tracking-tight">Response Tracking</h1>
+    </header>
+
+    <!-- Mini login -->
+    <section id="sectionLogin" class="bg-white rounded-2xl shadow p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Login</h2>
+      <p class="text-sm text-gray-600 mb-3">Enter your email to continue:</p>
+      <div class="flex gap-3">
+        <input id="loginEmail" type="email" placeholder="youremail@company.com" class="flex-1 rounded-xl border border-gray-300 px-3 py-2" />
+        <button id="btnLogin" class="px-4 py-2 rounded-xl bg-indigo-600 text-white">Login</button>
+      </div>
+      <p id="loginMsg" class="text-xs text-red-600 mt-2 hidden">Invalid email</p>
+    </section>
+
+    <!-- Tabs -->
+    <div id="tabsWrap" class="hidden">
+      <div class="flex gap-2 mb-4">
+        <button id="tabCapture" class="px-4 py-2 rounded-xl border border-indigo-200 bg-white">Capture</button>
+        <button id="tabReports" class="px-4 py-2 rounded-xl border border-indigo-200 bg-white">Reports</button>
+      </div>
+
+      <!-- Section: Capture -->
+      <section id="sectionCapture" class="bg-white rounded-2xl shadow p-6">
+        <form id="leadForm" class="grid grid-cols-1 gap-4" novalidate>
+          <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-600">Registration date</div>
+            <div id="todayTag" class="text-xs px-2 py-1 rounded-full bg-gray-100 border">—</div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-1" for="submitter_email">Your email</label>
+            <input id="submitter_email" name="submitter_email" type="email" readonly
+                   class="w-full rounded-xl border border-gray-300 px-3 py-2 bg-gray-100" />
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1" for="client_name">Client name</label>
+              <input id="client_name" name="client_name" type="text" required placeholder="John Doe"
+                     class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" for="company_name">Company</label>
+              <input id="company_name" name="company_name" type="text" placeholder="Company XYZ"
+                     class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1" for="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" maxlength="16" required placeholder="(333) 123-4567"
+                     class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <p class="text-xs text-gray-500 mt-1">Auto‑format: (###) ###-#### — paste like <code>(386) 627-6554</code>.</p>
+              <p id="phoneErr" class="text-xs text-red-600 mt-1 hidden">Enter at least 10 digits.</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" for="response_type">Response type</label>
+              <select id="response_type" name="response_type" required
+                      class="w-full rounded-xl border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">Select…</option>
+                <option>Booked</option>
+                <option>NA</option>
+                <option>Not interested</option>
+                <option>Call Back</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="callback_wrap" class="hidden">
+            <label class="block text-sm font-medium mb-1" for="callback_date">Call Back date</label>
+            <input id="callback_date" name="callback_date" type="date"
+                   class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <p class="text-xs text-gray-500 mt-1">Required only if you select "Call Back".</p>
+          </div>
+
+          <!-- Booked extras (no embed, just link + date of booking) -->
+          <div id="booked_extras" class="hidden border rounded-xl p-4 bg-indigo-50/30">
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1" for="closer">Closer</label>
+                <select id="closer" name="closer"
+                        class="w-full rounded-xl border border-gray-300 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                <p class="text-xs text-gray-500 mt-1">Edit list in the code (CLOSERS array).</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1" for="date_of_booking">Date of booking</label>
+                <input id="date_of_booking" name="date_of_booking" type="date"
+                       class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+            </div>
+            <div class="mt-4">
+              <a id="booking_link" href="https://api.estatelyconsulting.com/widget/booking/vHUVQH2FjmWoKuUJ1rXu?user_id=nJoyVpZO49NoNwPbI17V" target="_blank" rel="noopener"
+                 class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border bg-white hover:bg-gray-50 underline">
+                Booking Calendar
+              </a>
+              <p class="text-xs text-gray-600 mt-2">Remember to always use the "Daylight Savings time, ie: CST-CDT".</p>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1" for="source">Source (optional)</label>
+              <input id="source" name="source" type="text" placeholder="BBB Roofers / Campaign X"
+                     class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1" for="notes">Notes (optional)</label>
+              <input id="notes" name="notes" type="text" placeholder="Short comments"
+                     class="w-full rounded-xl border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-2">
+            <button id="resetBtn" type="button" class="px-4 py-2 rounded-xl border border-gray-300">Clear</button>
+            <button id="submitBtn" type="button" class="px-4 py-2 rounded-xl bg-indigo-600 text-white">Save</button>
+          </div>
+        </form>
+        <div id="toast" class="hidden mt-4 rounded-xl border p-3 text-sm"></div>
+      </section>
+
+      <!-- Section: Reports -->
+      <section id="sectionReports" class="bg-white rounded-2xl shadow p-6 mt-6 hidden">
+        <h2 class="text-xl font-semibold mb-4">Reports</h2>
+        <div class="grid md:grid-cols-5 gap-4 mb-4 items-end">
+          <input id="q_email" type="email" class="hidden" readonly />
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium mb-1" for="q_emails">Emails</label>
+            <select id="q_emails" multiple class="w-full rounded-xl border border-gray-300 px-3 py-2 bg-white"></select>
+            <label class="inline-flex items-center gap-2 text-sm mt-2">
+              <input id="q_select_all" type="checkbox" class="rounded" /> Select all
+            </label>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="q_start">From</label>
+            <input id="q_start" type="date" class="w-full rounded-xl border border-gray-300 px-3 py-2" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1" for="q_end">To</label>
+            <input id="q_end" type="date" class="w-full rounded-xl border border-gray-300 px-3 py-2" />
+          </div>
+          <div class="flex items-center gap-3">
+            <label class="inline-flex items-center gap-2 text-sm">
+              <input id="q_callbacks_only" type="checkbox" class="rounded" /> Call Backs only
+            </label>
+          </div>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+          <button id="btnQuery" class="px-4 py-2 rounded-xl bg-indigo-600 text-white">Query</button>
+          <button id="btnExport" class="px-4 py-2 rounded-xl border">Export CSV</button>
+        </div>
+
+        <div class="overflow-auto">
+          <table class="min-w-full text-sm">
+            <thead>
+              <tr class="text-left border-b bg-gray-50">
+                <th class="py-2 pr-4">Date</th>
+                <th class="py-2 pr-4">Email</th>
+                <th class="py-2 pr-4">Client</th>
+                <th class="py-2 pr-4">Company</th>
+                <th class="py-2 pr-4">Phone</th>
+                <th class="py-2 pr-4">Response</th>
+                <th class="py-2 pr-4">Callback</th>
+                <th class="py-2 pr-4">Closer</th>
+                <th class="py-2 pr-4">Date of booking</th>
+                <th class="py-2 pr-4">Source</th>
+                <th class="py-2 pr-4">Notes</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+
+        <p id="resultsCount" class="text-xs text-gray-500 mt-3">—</p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // === Config ===
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzflGfquQ0T2sTHdmTnKOwpAClwKfc_hi9XtBH3dbIPqieuVZpKPE3HIIBlfXGB85fJ/exec";
+    const API_KEY = "X9fj_82kjhPpLz!2025$Secure";
+
+    // Editable list of closers
+    const CLOSERS = [
+      'Ryan Irvine', 'Jacob Donaldson', 'Anders Dahl', 'Marcos Flores', 'James McNamara', 'Oswaldo Hill'
+    ];
+
+    let currentUserEmail = '';
+
+    // === Login ===
+    document.getElementById('btnLogin').addEventListener('click', () => {
+      const email = document.getElementById('loginEmail').value.trim();
+      if (!email || !(email.includes('@') && email.includes('.'))) {
+        document.getElementById('loginMsg').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('loginMsg').classList.add('hidden');
+      currentUserEmail = email;
+      document.getElementById('submitter_email').value = email;
+      document.getElementById('q_email').value = email; // hidden auth field for backend
+      document.getElementById('sectionLogin').classList.add('hidden');
+      document.getElementById('tabsWrap').classList.remove('hidden');
+      loadEmailsList();
+    });
+
+    // Tabs
+    const tabCapture = document.getElementById('tabCapture');
+    const tabReports = document.getElementById('tabReports');
+    const sectionCapture = document.getElementById('sectionCapture');
+    const sectionReports = document.getElementById('sectionReports');
+    function setTab(which) {
+      const active = which === 'capture' ? tabCapture : tabReports;
+      const inactive = which === 'capture' ? tabReports : tabCapture;
+      active.classList.add('bg-indigo-600','text-white');
+      inactive.classList.remove('bg-indigo-600','text-white');
+      sectionCapture.classList.toggle('hidden', which !== 'capture');
+      sectionReports.classList.toggle('hidden', which !== 'reports');
+      if (which === 'reports') loadEmailsList();
+    }
+    tabCapture.addEventListener('click', () => setTab('capture'));
+    tabReports.addEventListener('click', () => setTab('reports'));
+    setTab('capture');
+
+    document.getElementById('todayTag').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+    const responseSelect = document.getElementById('response_type');
+    const callbackWrap = document.getElementById('callback_wrap');
+    const callbackInput = document.getElementById('callback_date');
+    const bookedExtras = document.getElementById('booked_extras');
+    const closerSelect = document.getElementById('closer');
+    const dateOfBooking = document.getElementById('date_of_booking');
+
+    // Populate closers
+    function renderClosers() {
+      closerSelect.innerHTML = '<option value="">Select…</option>' + CLOSERS.map(n => `<option>${n}</option>`).join('');
+    }
+    renderClosers();
+
+    responseSelect.addEventListener('change', () => {
+      const v = responseSelect.value;
+      const isCallback = v === 'Call Back';
+      const isBooked = v === 'Booked';
+      callbackWrap.classList.toggle('hidden', !isCallback);
+      callbackInput.required = isCallback;
+      bookedExtras.classList.toggle('hidden', !isBooked);
+      if (!isCallback) callbackInput.value = '';
+    });
+
+    // Phone: mask to (###) ###-#### (display), but keep digits-only for backend
+    const phoneInput = document.getElementById('phone');
+    const phoneErr   = document.getElementById('phoneErr');
+
+    function formatUS(digits) {
+      const d = digits.slice(0, 10);
+      if (d.length <= 3) return d ? `(${d}` : '';
+      if (d.length <= 6) return `(${d.slice(0,3)}) ${d.slice(3)}`;
+      return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    }
+    phoneInput.addEventListener('input', () => {
+      const digits = (phoneInput.value.match(/[0-9]/g) || []).join('');
+      phoneInput.value = formatUS(digits);
+      phoneErr.classList.toggle('hidden', digits.length < 10);
+    });
+    phoneInput.addEventListener('blur', () => {
+      const digits = (phoneInput.value.match(/[0-9]/g) || []).join('');
+      phoneErr.classList.toggle('hidden', digits.length >= 10);
+    });
+
+    // Toasts
+    const toast = document.getElementById('toast');
+    function showToast(msg, type = 'info') {
+      toast.textContent = msg;
+      toast.classList.remove('hidden', 'border-gray-300', 'border-red-300', 'border-green-300', 'text-gray-800', 'text-red-800', 'text-green-800', 'bg-white', 'bg-red-50', 'bg-green-50');
+      toast.classList.add('bg-white', 'border');
+      if (type === 'success') { toast.classList.add('border-green-300', 'text-green-800', 'bg-green-50'); }
+      else if (type === 'error') { toast.classList.add('border-red-300', 'text-red-800', 'bg-red-50'); }
+      else { toast.classList.add('border-gray-300', 'text-gray-800'); }
+    }
+
+    // Reset
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('leadForm').reset();
+      callbackWrap.classList.add('hidden');
+      bookedExtras.classList.add('hidden');
+      phoneErr.classList.add('hidden');
+      showToast('Form cleared.', 'info');
+    });
+
+    // === Save (POST) — form-urlencoded ===
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+      const email = document.getElementById('submitter_email').value.trim();
+      const digitsOnlyPhone = (phoneInput.value.match(/[0-9]/g) || []).join('');
+      const resp  = responseSelect.value;
+      const okEmail = email.includes('@') && email.includes('.');
+      if (!okEmail) return showToast('Enter a valid email.', 'error');
+      if (!document.getElementById('client_name').value.trim()) return showToast('Client name is required.', 'error');
+      if (digitsOnlyPhone.length < 10) return showToast('Phone must have at least 10 digits.', 'error');
+      if (!resp) return showToast('Select a response type.', 'error');
+      if (resp === 'Call Back' && !callbackInput.value) return showToast('Select a Call Back date.', 'error');
+
+      try {
+        const form = new URLSearchParams({
+          api_key: API_KEY,
+          submitter_email: email,
+          client_name: document.getElementById('client_name').value.trim(),
+          company_name: document.getElementById('company_name').value.trim(),
+          phone: digitsOnlyPhone,
+          response_type: resp,
+          callback_date: callbackInput.value || '',
+          closer: (resp === 'Booked' ? (closerSelect.value || '') : ''),
+          date_of_booking: (resp === 'Booked' ? (dateOfBooking.value || '') : ''),
+          source: document.getElementById('source').value.trim(),
+          notes: document.getElementById('notes').value.trim(),
+        });
+
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: form.toString()
+        });
+        const txt = await res.text();
+        let data; try { data = JSON.parse(txt); } catch { throw new Error('Bad JSON from backend: ' + txt); }
+        if (!data.success) throw new Error(data.message || 'Save error');
+        document.getElementById('leadForm').reset();
+        callbackWrap.classList.add('hidden');
+        bookedExtras.classList.add('hidden');
+        phoneErr.classList.add('hidden');
+        showToast('Saved ✔️', 'success');
+      } catch (err) {
+        showToast('Save failed: ' + err.message, 'error');
+        console.error(err);
+      }
+    });
+
+    // === Reports (GET) ===
+    const btnQuery = document.getElementById('btnQuery');
+    const btnExport = document.getElementById('btnExport');
+    const resultsBody = document.getElementById('resultsBody');
+    const resultsCount = document.getElementById('resultsCount');
+    const qEmails = document.getElementById('q_emails');
+    const qSelectAll = document.getElementById('q_select_all');
+
+    function optionsSelected(selectEl) {
+      return Array.from(selectEl.options).filter(o => o.selected).map(o => o.value);
+    }
+
+    qSelectAll.addEventListener('change', () => {
+      const all = qSelectAll.checked;
+      Array.from(qEmails.options).forEach(o => o.selected = all);
+    });
+
+    async function loadEmailsList() {
+      if (!currentUserEmail) return;
+      try {
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set('api_key', API_KEY);
+        url.searchParams.set('email', currentUserEmail); // auth
+        url.searchParams.set('list', 'emails');
+        const res = await fetch(url.toString());
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || 'Failed to load emails');
+        const emails = (data.emails || []).sort((a,b)=>a.localeCompare(b));
+        const prev = new Set(optionsSelected(qEmails));
+        qEmails.innerHTML = emails.map(e => `<option value="${e}">${e}</option>`).join('');
+        Array.from(qEmails.options).forEach(o => { if (prev.has(o.value)) o.selected = true; });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    let lastResults = [];
+
+    btnQuery.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const actor = document.getElementById('q_email').value.trim(); // auth email
+      if (!(actor.includes('@') && actor.includes('.'))) return alert('Login email missing.');
+      const selected = optionsSelected(qEmails);
+      const start = document.getElementById('q_start').value;
+      const end   = document.getElementById('q_end').value;
+      const cbOnly = document.getElementById('q_callbacks_only').checked ? '1' : '0';
+      try {
+        const url = new URL(WEB_APP_URL);
+        url.searchParams.set('api_key', API_KEY);
+        url.searchParams.set('email', actor); // used only for allowlist auth
+        if (selected.length) url.searchParams.set('emails', selected.join(','));
+        if (start) url.searchParams.set('start', start);
+        if (end)   url.searchParams.set('end', end);
+        url.searchParams.set('callbacks_only', cbOnly);
+        const res = await fetch(url.toString());
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || 'Query error');
+        lastResults = data.rows || [];
+        renderResults(lastResults);
+      } catch (err) {
+        alert('Query failed: ' + err.message);
+        console.error(err);
+      }
+    });
+
+    function renderResults(rows) {
+      resultsBody.innerHTML = '';
+      for (const r of rows) {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b';
+        tr.innerHTML = `
+          <td class="py-2 pr-4 whitespace-nowrap">${escapeHtml(r.timestamp)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.submitter_email)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.client_name)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.company_name)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.phone)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.response_type)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.callback_date)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.closer || '')}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.date_of_booking || '')}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.source)}</td>
+          <td class="py-2 pr-4">${escapeHtml(r.notes)}</td>`;
+        resultsBody.appendChild(tr);
+      }
+      resultsCount.textContent = `${rows.length} result(s)`;
+    }
+
+    btnExport.addEventListener('click', () => {
+      if (!lastResults.length) return alert('No results to export.');
+      const headers = Object.keys(lastResults[0] || { timestamp:'', submitter_email:'', client_name:'', company_name:'', phone:'', response_type:'', callback_date:'', closer:'', date_of_booking:'', source:'', notes:'' });
+      const NL = String.fromCharCode(10);
+      const csv = [headers.join(','), ...lastResults.map(r => headers.map(h => csvEscape(r[h] ?? '')).join(','))].join(NL);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'tracking_report.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    function csvEscape(val) {
+      const s = String(val).replaceAll('"', '""');
+      const hasNewline = s.indexOf(String.fromCharCode(10)) !== -1;
+      const needsWrap = s.includes(',') || s.includes('"') || hasNewline;
+      return needsWrap ? '"' + s + '"' : s;
+    }
+    function escapeHtml(s) {
+      return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
+  </script>
+</body>
+</html>
